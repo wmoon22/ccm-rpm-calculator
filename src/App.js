@@ -1,6 +1,21 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+// Move constants outside component
+const CCM_CODES = {
+  '99490': { rate: 60.49, name: 'Initial 20 minutes (clinical staff)' },
+  '99439': { rate: 45.93, name: 'Each additional 20 minutes (clinical staff)' },
+  '99487': { rate: 131.65, name: 'Complex CCM initial 60 minutes' },
+  '99489': { rate: 70.52, name: 'Complex CCM each additional 30 minutes' },
+};
+
+const RPM_CODES = {
+  '99453': { rate: 19.73, name: 'Setup and patient education' },
+  '99454': { rate: 43.02, name: 'Device supply with daily recordings' },
+  '99457': { rate: 48.14, name: 'Initial 20 minutes of treatment management' },
+  '99458': { rate: 38.49, name: 'Each additional 20 minutes' }
+};
+
 const Calculator = () => {
   const [patientCount, setPatientCount] = useState(100);
   const [ccmParticipation, setCcmParticipation] = useState(50);
@@ -13,20 +28,6 @@ const Calculator = () => {
   const [completedCareRate, setCompletedCareRate] = useState(97);
   const [rpmDeviceReadingsPercentage, setRPMDeviceReadingsPercentage] = useState(75);
 
-  const ccmCodes = {
-    '99490': { rate: 60.49, name: 'Initial 20 minutes (clinical staff)' },
-    '99439': { rate: 45.93, name: 'Each additional 20 minutes (clinical staff)' },
-    '99487': { rate: 131.65, name: 'Complex CCM initial 60 minutes' },
-    '99489': { rate: 70.52, name: 'Complex CCM each additional 30 minutes' },
-  };
-
-  const rpmCodes = {
-    '99453': { rate: 19.73, name: 'Setup and patient education' },
-    '99454': { rate: 43.02, name: 'Device supply with daily recordings' },
-    '99457': { rate: 48.14, name: 'Initial 20 minutes of treatment management' },
-    '99458': { rate: 38.49, name: 'Each additional 20 minutes' }
-  };
-
   const calculateMonthlyRevenue = useCallback((ccmPatients, rpmPatients) => {
     let ccmRevenue = 0;
     let rpmRevenue = 0;
@@ -35,27 +36,27 @@ const Calculator = () => {
     const completedRPMPatients = Math.round(rpmPatients * (completedCareRate / 100));
 
     // CCM calculations
-    ccmRevenue += completedCCMPatients * ccmCodes['99490'].rate;
+    ccmRevenue += completedCCMPatients * CCM_CODES['99490'].rate;
     
     const add20MinPatients = Math.round(completedCCMPatients * (add20MinPercentage / 100));
-    ccmRevenue += add20MinPatients * ccmCodes['99439'].rate;
+    ccmRevenue += add20MinPatients * CCM_CODES['99439'].rate;
     
     const add20MinTwicePatients = Math.round(completedCCMPatients * (add20MinTwicePercentage / 100));
-    ccmRevenue += add20MinTwicePatients * ccmCodes['99439'].rate * 2;
+    ccmRevenue += add20MinTwicePatients * CCM_CODES['99439'].rate * 2;
     
     const complexCCMPatients = Math.round(completedCCMPatients * (complexCCMPercentage / 100));
-    ccmRevenue += complexCCMPatients * ccmCodes['99487'].rate;
+    ccmRevenue += complexCCMPatients * CCM_CODES['99487'].rate;
     
     const complexCCMAddPatients = Math.round(completedCCMPatients * (complexCCMAddPercentage / 100));
-    ccmRevenue += complexCCMAddPatients * ccmCodes['99489'].rate;
+    ccmRevenue += complexCCMAddPatients * CCM_CODES['99489'].rate;
 
     // RPM calculations
-    rpmRevenue += completedRPMPatients * rpmCodes['99453'].rate;
+    rpmRevenue += completedRPMPatients * RPM_CODES['99453'].rate;
     const rpmDevicePatients = Math.round(completedRPMPatients * (rpmDeviceReadingsPercentage / 100));
-    rpmRevenue += rpmDevicePatients * rpmCodes['99454'].rate;
-    rpmRevenue += completedRPMPatients * rpmCodes['99457'].rate;
+    rpmRevenue += rpmDevicePatients * RPM_CODES['99454'].rate;
+    rpmRevenue += completedRPMPatients * RPM_CODES['99457'].rate;
     const rpmAdd20MinPatients = Math.round(completedRPMPatients * (add20MinPercentage / 100));
-    rpmRevenue += rpmAdd20MinPatients * rpmCodes['99458'].rate;
+    rpmRevenue += rpmAdd20MinPatients * RPM_CODES['99458'].rate;
 
     return { ccmRevenue, rpmRevenue, totalRevenue: ccmRevenue + rpmRevenue };
   }, [add20MinPercentage, add20MinTwicePercentage, complexCCMPercentage, complexCCMAddPercentage, 
