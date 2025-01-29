@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Calculator = () => {
@@ -27,7 +27,7 @@ const Calculator = () => {
     '99458': { rate: 38.49, name: 'Each additional 20 minutes' }
   };
 
-  const calculateMonthlyRevenue = (ccmPatients, rpmPatients) => {
+  const calculateMonthlyRevenue = useCallback((ccmPatients, rpmPatients) => {
     let ccmRevenue = 0;
     let rpmRevenue = 0;
 
@@ -58,7 +58,8 @@ const Calculator = () => {
     rpmRevenue += rpmAdd20MinPatients * rpmCodes['99458'].rate;
 
     return { ccmRevenue, rpmRevenue, totalRevenue: ccmRevenue + rpmRevenue };
-  };
+  }, [add20MinPercentage, add20MinTwicePercentage, complexCCMPercentage, complexCCMAddPercentage, 
+      completedCareRate, rpmDeviceReadingsPercentage]);
 
   const revenue = useMemo(() => {
     const ccmPatients = Math.round(patientCount * (ccmParticipation / 100));
@@ -74,7 +75,7 @@ const Calculator = () => {
       monthlyRevenue: totalRevenue,
       annualRevenue,
     };
-  }, [patientCount, ccmParticipation, rpmParticipation, add20MinPercentage, add20MinTwicePercentage, complexCCMPercentage, complexCCMAddPercentage, completedCareRate, rpmDeviceReadingsPercentage]);
+  }, [patientCount, ccmParticipation, rpmParticipation, calculateMonthlyRevenue]);
 
   const chartData = useMemo(() => {
     const rampRates = [0.1, 0.25, 0.5, 0.75, 1];
@@ -89,7 +90,7 @@ const Calculator = () => {
         revenue: totalRevenue,
       };
     });
-  }, [patientCount, ccmParticipation, rpmParticipation, add20MinPercentage, add20MinTwicePercentage, complexCCMPercentage, complexCCMAddPercentage, completedCareRate, rpmDeviceReadingsPercentage]);
+  }, [patientCount, ccmParticipation, rpmParticipation, calculateMonthlyRevenue]);
 
   return (
     <div className="max-w-4xl mx-auto p-4">
